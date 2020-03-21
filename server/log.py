@@ -1,3 +1,3 @@
 import logging as log
 
-log.basicConfig(level=log.INFO, format='[%(filename)s:%(lineno)d] %(message)s')
+log.basicConfig(level=log.INFO, format='[%(asctime)s] %(filename)s:%(lineno)d: %(message)s')

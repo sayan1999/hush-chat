@@ -3,6 +3,11 @@ from client_class import Client
 import socket
 import pdb
 from credential import verifyClient
+from time import sleep
+
+def debugging():
+	client=Client()
+	pdb.set_trace()
 
 def client_gen():
 	'''accepts and returns client connection'''
@@ -59,12 +64,20 @@ def client_thread(client):
 
 	startchat(client, "")
 
+def debugging():
+	client=Client()
+	pdb.set_trace()
+
+def check_conn():
+	while True:
+		sleep(15)
+		Client.kill_inactive()
 
 if __name__=='__main__':
 	'''main function'''
 
-	client=Client()
-	start_new_thread(pdb.set_trace, ())
+	start_new_thread(debugging, ())
+	start_new_thread(check_conn, ())
 	for connaddr in client_gen():		
 		client=Client(connaddr[0], connaddr[1])
 		print("One connection was received: ", client.addr)

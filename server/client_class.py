@@ -6,6 +6,7 @@ class Client:
 
 	client_list=list()
 	client_map=dict()
+	conn_list=[]
 
 	def __init__(self, conn=None, addr=None):
 		'''Constructor'''
@@ -13,20 +14,41 @@ class Client:
 		self.state='0001'
 		self.addr=addr
 		self.conn=conn
+		if conn!=None:
+			Client.conn_list.append(conn)
 
-	def isalive(self, user):
-		userconn=self.client_map.get(user, None)
+	@staticmethod
+	def kill_inactive():
+		for c in Client.conn_list:
+			try:
+				c.sendall(b'1010')
+			except BrokenPipeError:
+				c.close()
+				if c in Client.conn_list:
+					Client.conn_list.remove(c)	
+
+	@staticmethod
+	def isalive(user):
+		userconn=Client.client_map.get(user, None)
 		if userconn==None:
 			return False
 		try:
 			userconn.conn.sendall(b'1010')
 			return True
 
+		except OSError:
+			if user in Client.client_list:
+				Client.client_list.remove(user)
+			if user in Client.client_map.keys():
+				Client.client_map.pop(user)
+			return False
+
 		except BrokenPipeError:
-			if user in self.client_list:
-				self.client_list.remove(user)
-			if user in self.client_map.keys():
-				self.client_map.pop(user)
+			if user in Client.client_list:
+				Client.client_list.remove(user)
+			if user in Client.client_map.keys():
+				Client.client_map.pop(user)
+			log.info("Removing "+user)
 			return False
 
 	def set_name(self, name):

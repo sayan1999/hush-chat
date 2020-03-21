@@ -3,7 +3,6 @@ from encryption import gen_key, encrypt, decrypt
 from threading import Thread
 from sys import stdout, stdin
 from errors import err
-import time
 from termcolor import colored
 
 MYNAME=""
@@ -39,7 +38,7 @@ def sign(server):
 	password=input("Enter Password: ")
 	server.send(password)
 
-	state=server.recvStatus()
+	state=server.extract()
 
 	if state != '0010':
 		print(colored(err[state], 'red'))
@@ -50,7 +49,7 @@ def sign(server):
 
 	print(colored("Generating key for current session", "white"))
 	server.send(gen_key(),  False)
-	state=server.recvStatus()
+	state=server.extract()
 
 	if state != '0111':
 		print(colored("Key was not accepted", "red"))
@@ -139,13 +138,14 @@ if __name__ == '__main__':
 
 	server = Server('localhost', 8080)
 
+	t2=Thread(target=recv, args=(server,))
+	t2.start()
+
 	while not sign(server):
 		continue
 
-	t1=Thread(target=send, args=(server,))
-	t2=Thread(target=recv, args=(server,))
+	t1=Thread(target=send, args=(server,))	
 	t1.start()
-	t2.start()
 
 	t1.join()
 	t2.join()
