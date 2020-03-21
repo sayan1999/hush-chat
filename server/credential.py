@@ -9,19 +9,19 @@ def registration(username, password):
 	pd=cfg.get('users', username, fallback='No such things as monsters.')	
 	if pd != 'No such things as monsters.':
 		log.info('User already registered')
-		return '0000'
+		return '0011'
 
 	cfg.set('users', username, password)	
 	with open('credentials.ini', 'w') as configfile:
 		cfg.write(configfile)
-	return "1111"
+	return "0010"
 
 
-def verify(username, password, list_of_clients):
+def verify(username, password, client):
 
-	if username in list_of_clients:
+	if client.isalive(username):
 		log.info("User already logged in.")
-		return "0001"
+		return "1001"
 	
 	cfg = configparser.ConfigParser()
 	credentials=cfg.read('credentials.ini')
@@ -29,30 +29,32 @@ def verify(username, password, list_of_clients):
 	pd=cfg.get('users', username, fallback='No such things as monsters.')	
 	if pd=='No such things as monsters.':
 		log.info('User not registered')
-		return "0010"
+		return "0100"
 
 	if pd!=password:
 		log.info('Incorrect password')
-		return "0011"
+		return "0101"
 
 	log.info("Logged in successfully")
-	return "1111"
+	return "0010"
 
 
-def verifyClient(conn, list_of_clients):
+def verifyClient(conn, client):
 
 	signup=conn.recv(1024).decode('utf-8').strip()
 	username=conn.recv(1024).decode('utf-8').strip()
 	password=conn.recv(1024).decode('utf-8').strip()
+	log.debug("signup: " + signup)
+	log.debug("username: " + username)
+	log.debug("password: " + password)
 
 	if int(signup):
 		s=registration(username, password)
-		if s != "1111":
-			return (username, "", e)
+		if s != "0010":
+			return (username, s)
 	else:
-		s = verify(username, password, list_of_clients)
-		if s != "1111":
-			return (username, "", e)
+		s = verify(username, password, client)
+		if s != "0010":
+			return (username, s)
 
-	pub_key=conn.recv(4096).decode('ascii').strip().encode('ascii')
-	return username, pub_key, "1111"
+	return username, "0010"

@@ -37,12 +37,13 @@ def decrypt(messageBytes):
 
 def encrypt(message, pem):
 	
+	messageBytes=message.encode('ascii')
 	public_key = serialization.load_pem_public_key(
         pem,
         backend=default_backend()
     )
 	encrypted = public_key.encrypt(
-	    message,
+	    messageBytes,
 	    padding.OAEP(
 	        mgf=padding.MGF1(algorithm=hashes.SHA256()),
 	        algorithm=hashes.SHA256(),
