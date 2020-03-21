@@ -1,9 +1,15 @@
 import configparser
 from log import log
+from os.path import exists as fileexist
 
 def registration(username, password):
 
 	cfg = configparser.ConfigParser()
+	if not fileexist('credentials.ini'):
+		with open('credentials.ini', 'w+') as f:
+			f.write('[users]')
+			f.close()
+			
 	credentials=cfg.read('credentials.ini')
 
 	pd=cfg.get('users', username, fallback='No such things as monsters.')	

@@ -4,18 +4,21 @@ import socket
 import pdb
 from credential import verifyClient
 from time import sleep
+from sys import argv
+from termcolor import colored
+from db import instance
 
 def debugging():
 	client=Client()
 	pdb.set_trace()
 
-def client_gen():
+def client_gen(host, port):
 	'''accepts and returns client connection'''
 
 	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 	server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
 	print("Successfully created socket")
-	server.bind(('localhost', 8080)) 
+	server.bind((host, port)) 
 	server.listen(5)
 	print("Listening at localhost:8080")
 	while True:
@@ -24,27 +27,40 @@ def client_gen():
 def startchat(client, name):
 	'''start sending msg to clients'''
 	
-	state=client.recvStatus()
+	while True:
+		state=client.recvStatus()
 
-	if state=='1000':
-		name=client.recv()
-		if not client.isalive(name):
-			client.send('1100')
-			return startchat(client, name)
-		else:
-			client.send('1000')
-			client.send(client.client_map[name].get_key(), False)
-			return startchat(client, name)
-			
-	if state=='1101':
-		msg=client.recv(False)
-		if client.client_map[name].send('1111') and client.client_map[name].send(msg, False):
-			client.send('1101')
-			return startchat(client, name)
-		else:
-			client.send('1110')
-			return startchat(client, name)
+		if state=='1000':
+			name=client.recv()
+			if not client.isalive(name):
+				client.send('1100')
+				continue
+			else:
+				client.send('1000')
+				client.send(client.client_map[name].get_key(), False)
+				continue
+				
+		if state=='1101':
+			msg=client.recv(False)
+			if client.client_map[name].send('1111') and client.client_map[name].send(msg, False):
+				client.send('1101')
+				continue
+			else:
+				if instance.push_res((name, msg)):
+					client.send('1110')
+					continue
+				else:
+					client.send('1011')
+					continue
 
+def check_backlog(client):
+
+	rows=instance.get_res(client.get_name())
+	
+	for row in rows:
+		id=row[0]
+		if client.send('1111') and client.send(row[2], False):
+			instance.delete_res(str(id))
 
 def client_thread(client):
 	'''working thread for  a client'''
@@ -62,6 +78,8 @@ def client_thread(client):
 	client.set_key(client.recv(False))
 	client.send('0111')
 
+	check_backlog(client)
+
 	startchat(client, "")
 
 def debugging():
@@ -76,9 +94,14 @@ def check_conn():
 if __name__=='__main__':
 	'''main function'''
 
+	if len(argv)!=3:
+		print(colored("Correct Usage: script host port", 'red'))
+		exit()
+	host, port=argv[1], int(argv[2])
+
 	start_new_thread(debugging, ())
 	start_new_thread(check_conn, ())
-	for connaddr in client_gen():		
+	for connaddr in client_gen(host, port):		
 		client=Client(connaddr[0], connaddr[1])
 		print("One connection was received: ", client.addr)
 		start_new_thread(client_thread, (client, ))

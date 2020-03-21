@@ -8,14 +8,21 @@ private_key=""
 
 def gen_key():
 	global private_key
-	private_key = rsa.generate_private_key(
-		public_exponent=65537,
-		key_size=2048,
-		backend=default_backend())
+	pem=""
+	with open("private_key.pem", "rb") as key_file:
+	    private_key = serialization.load_pem_private_key(
+	        key_file.read(),
+	        password=None,
+	        backend=default_backend()
+	    )
 
-	public_key = private_key.public_key()
+	with open("public_key.pem", "rb") as key_file:
+	    public_key = serialization.load_pem_public_key(
+	        key_file.read(),
+	        backend=default_backend()
+	    )	
 
-	pem = public_key.public_bytes(
+	pem=public_key.public_bytes(
 	    encoding=serialization.Encoding.PEM,
 	    format=serialization.PublicFormat.SubjectPublicKeyInfo
 	)
