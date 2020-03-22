@@ -22,7 +22,7 @@ def client_gen(host, port):
 	print("Successfully created socket")
 	server.bind((host, port)) 
 	server.listen()
-	print("Listening at localhost:8080")
+	print("Listening at ", (host, port))
 	while True:
 		yield server.accept()
 
@@ -44,7 +44,7 @@ def startchat(client, name):
 				continue
 			else:
 				client.send('1000')
-				client.send(instance.get_key(name), False)
+				client.send(key, False)
 				continue
 				
 		if state=='1101':

@@ -18,13 +18,16 @@ class Server:
 	def store(self, data):
 		'''store msges in the Q'''
 		self.respQ.append(data)
+		log.debug("Stored "+str(data))
 
 	def extract(self):
 		'''blocking extraction of msg from Q'''
 
 		while True:
 			try:
-				return self.respQ.pop(0)
+				data=self.respQ.pop(0)
+				log.debug("Extracted "+str(data))
+				return data
 			except IndexError:
 				continue
 

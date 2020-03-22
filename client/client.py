@@ -19,7 +19,7 @@ def write(data):
 	'''write into stdout'''
 	if type(data)!=str:
 		data=data.decode('ascii')
-	print(colored(data, 'green'))
+	print(colored(data, 'magenta'))
 
 
 def sign(server):
@@ -31,9 +31,7 @@ def sign(server):
 			continue
 		
 		server.send('0001')
-
 		server.send(signup)
-
 		
 		global MYNAME
 		username=input(colored("Enter Username: ", "cyan"))
@@ -146,6 +144,7 @@ def recv(server):
 
 		if state=='1100':
 			server.store(state)
+			continue
 
 		if state=='1000':
 			# key recv
