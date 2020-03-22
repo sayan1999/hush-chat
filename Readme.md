@@ -1,4 +1,4 @@
-#HUSH!!!
+# HUSH!!!
 # An awesome end-to-end encrypted chat application using TCP sockets
 
 ## Features:
