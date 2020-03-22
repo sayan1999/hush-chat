@@ -1,4 +1,8 @@
 # HUSH!!!
+
+![HUSH](previews/HUSH.png?raw=true "HUSH.jpg")
+
+
 # An awesome end-to-end encrypted chat application using TCP sockets
 
 ## Features:
