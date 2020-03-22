@@ -41,6 +41,8 @@ class Server:
 		
 		try:
 			log.debug("Message to send " + str(message))
+			if message==b'' or message == '':
+				return 
 			self.server.sendall(message)
 			log.debug("Message sent to server " + str(message))
 			return True

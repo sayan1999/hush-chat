@@ -6,6 +6,7 @@ from errors import err
 from termcolor import colored
 from getpass import getpass as getPasswd
 from _thread import exit_thread as stop_current_thread
+from log import log
 
 MYNAME=""
 pub_key=""
@@ -56,11 +57,10 @@ def sign(server):
 		
 		try:
 			key=gen_key(MYNAME)
+			server.send(key,  False)
 		except BaseException as e:
 			log.error(e)
-
-		server.send(key,  False)
-		
+	
 
 		state=server.extract()
 
@@ -144,7 +144,10 @@ def recv(server):
 		if state=='1010':
 			continue
 
-		if state=='1000' or state=='1100':
+		if state=='1100':
+			server.store(state)
+
+		if state=='1000':
 			# key recv
 			server.store(state)
 			key=server.recv(encoding=False)

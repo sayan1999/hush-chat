@@ -1,6 +1,7 @@
 import socket
 from log import log
 from _thread import exit_thread as stop_current_thread
+from random import randint
 
 class Client:
 	''' A conn class to directly interact with conn '''
@@ -15,6 +16,7 @@ class Client:
 		self.conn=conn
 		if conn!=None:
 			Client.conn_list.append(self)
+		self.name=str(randint(0, 14124124124124))
 
 	@staticmethod
 	def kill_inactive():
