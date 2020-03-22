@@ -1,6 +1,7 @@
 import configparser
 from log import log
 from os.path import exists as fileexist
+from client_class import Client
 
 def registration(username, password):
 
@@ -53,7 +54,7 @@ def verifyClient(conn, client):
 	log.debug("signup: " + signup)
 	log.debug("username: " + username)
 	log.debug("password: " + password)
-
+	Client.kill_inactive()
 	if int(signup):
 		s=registration(username, password)
 		if s != "0010":

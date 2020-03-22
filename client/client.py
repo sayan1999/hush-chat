@@ -5,6 +5,7 @@ from sys import stdout, stdin, argv
 from errors import err
 from termcolor import colored
 from getpass import getpass as getPasswd
+from _thread import exit_thread as stop_current_thread
 
 MYNAME=""
 pub_key=""
@@ -29,14 +30,18 @@ def sign(server):
 			continue
 		
 		server.send('0001')
+
 		server.send(signup)
+
 		
 		global MYNAME
 		username=input(colored("Enter Username: ", "cyan"))
 		MYNAME=username
 		server.send(username)
+
 		password=getPasswd()
 		server.send(password)
+
 
 		state=server.extract()
 
@@ -48,7 +53,15 @@ def sign(server):
 			print(colored("login was successful", "white"))
 
 		print(colored("Generating key for current session", "white"))
-		server.send(gen_key(),  False)
+		
+		try:
+			key=gen_key(MYNAME)
+		except BaseException as e:
+			log.error(e)
+
+		server.send(key,  False)
+		
+
 		state=server.extract()
 
 		if state != '0111':
@@ -69,37 +82,47 @@ def sendmsg(server):
 		return False
 
 	server.send('1101')
+	
+
 	msg=MYNAME + ": " + msg
 	encrypted=encrypt(msg, pub_key)
-	server.send(encrypted, False)
+	server.send(encrypted, encoding=False)
 	
 	state=server.extract()
 	return state
 
 
+
 def send(server):
 	'''sending to the server'''
 
+	while not sign(server):
+		continue
+
+	global MYNAME
 	while True:
 		print(colored("New recepient: ", 'cyan'))
 		global pub_key
-		friend = read() 
+		friend = read()
+		if friend==MYNAME:
+			print(colored("Can't chat with self", "red"))
+			continue
 		server.send('1000')
 		server.send(friend)
-
+	
 		state=server.extract()	
 		if state=='1100':
-			print(colored(friend + " is not available", "red"))
-			return send(server)
+			print(colored(friend + " is not registered", "red"))
+			continue
 
 		if state=='1000':
-			print(colored(friend + " is online", "white"))
+			print(colored("Ready to send messages", "white"))
 			pub_key=server.extract()
 
 		while True:
 			state=sendmsg(server)
 			if state=='1110':
-				print(colored(friend + " went offline", "red"))
+				print(colored(friend + " is offline", "red"))
 			if state=='1011':
 				print(colored("Message sending to " + friend + " failed", "red"))
 				print(colored("Exiting from chat", "red"))
@@ -116,19 +139,22 @@ def recv(server):
 	'''recv msg from server'''
 
 	while True:
-		state=server.recvStatus()
+		state=server.recv(size=4)
+		
 		if state=='1010':
 			continue
 
-		if state=='1000':
+		if state=='1000' or state=='1100':
 			# key recv
 			server.store(state)
-			key=server.recv(False)
+			key=server.recv(encoding=False)
+			
 			server.store(key)
 
 		else:
 			if state=='1111':
-				encrypted=server.recv(False)
+				encrypted=server.recv(encoding=False)
+
 				decrypted=decrypt(encrypted)
 				write(decrypted)
 
@@ -144,13 +170,13 @@ if __name__ == '__main__':
 	host, port=argv[1], int(argv[2])
 
 	server = Server(host, port)
+	t1=Thread(target=send, args=(server,))
 	t2=Thread(target=recv, args=(server,))
-	t2.start()
 
-	while not sign(server):
-		continue
-
-	t1=Thread(target=send, args=(server,))	
 	t1.start()
-	t1.join()
+	t2.start()		
+	
 	t2.join()
+	print(0)
+	server.close()
+	exit()

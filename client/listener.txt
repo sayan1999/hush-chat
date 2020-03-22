@@ -1,0 +1,4 @@
+[36m0 for Logging In,  1 for Signing Up: [0m[36mEnter Username: [0m[37mlogin was successful[0m
+[37mGenerating key for current session[0m
+[37mYour session is end-to-end encrypted now[0m
+[36mNew recepient: [0m

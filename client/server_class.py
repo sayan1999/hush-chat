@@ -1,5 +1,6 @@
 import socket
 from log import log
+from _thread import exit_thread as stop_current_thread
 
 class Server:
 	''' A server class to directly interact with server '''
@@ -7,7 +8,6 @@ class Server:
 	def __init__(self, localhost, port):
 		'''Constructor'''
 
-		self.state='0000'
 		self.addr=(localhost, port)
 		self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.server.connect(self.addr)
@@ -30,11 +30,8 @@ class Server:
 
 	def send(self, message, encoding='utf-8'):
 		'''send method to send to server'''
-
-		if encoding==False:
-			message=message.strip()
-			
-		else:
+		
+		if encoding!=False:
 			try:
 				message=message.strip().encode(encoding)
 
@@ -42,56 +39,45 @@ class Server:
 				log.error(e)
 				return False
 		
-		log.debug("Message encoded into: " + str(message))
-		self.server.sendall(message)
-		log.info("Message sent to server")
-		return True
-
-	def recvStatus(self):
-		'''receive status bytes for upcoming data'''
-
-		status=self.server.recv(4)
 		try:
-			status=status.decode('utf-8')
+			log.debug("Message to send " + str(message))
+			self.server.sendall(message)
+			log.debug("Message sent to server " + str(message))
+			return True
+		except (BrokenPipeError, OSError):
+			log.error("Unable to send; Server is unreachable")
+			stop_current_thread()
 
-		except ValueError as e:
-			log.error(e)
-			return None
-
-		log.info("Received status from server: "+status)
-		return status
-
-
-	def recv(self, encoding='utf-8'):
+	
+	def recv(self, size = 4096, encoding='utf-8'):
 		'''recv response from server'''
 
-		data=self.server.recv(4096)
-		if encoding==False:
-			return data.strip()
-
+		datatype = "message" if size == 4096 else "status"
+		data = ''
+		
 		try:
-			data=data.decode(encoding).strip()
-
-		except ValueError as e:
+			data=self.server.recv(size)
+			if data==b'':
+				log.error("Unable to receive; Server is unreachable")
+				stop_current_thread()
+		except OSError as e:
 			log.error(e)
-			return None
+			stop_current_thread()
 
-		log.info("Received data from server: " + data)
+		if encoding!=False:
+			try:
+				data=data.strip().decode(encoding)
+
+			except ValueError as e:
+				log.error(e)
+				stop_current_thread()
+
+		log.debug("Received " + datatype + " from server: " + str(data))
 		return data
-
-	def get_state(self):
-		'''get current state'''
-
-		return self.state
-
-	def set_state(self, new):
-		'''update current state'''
-
-		self.state=new
-		return self.state
-
 
 	def show(self):
 		'''Print all variables'''
-
 		print(self.__dict__)
+
+	def close(self):
+		self.server.close()
