@@ -3,6 +3,7 @@ from encryption import gen_key, encrypt, decrypt
 from threading import Thread
 from sys import stdout, stdin, argv
 from errors import err
+import time
 from termcolor import colored
 from getpass import getpass as getPasswd
 from _thread import exit_thread as stop_current_thread
@@ -83,6 +84,9 @@ def sendmsg(server):
 	
 
 	msg=MYNAME + ": " + msg
+	format1=colored('< ' + time.asctime() + ' >', 'yellow', 'on_blue')
+	format2=colored('\n...', 'magenta', attrs=['blink', 'bold'])
+	msg=format1+' '+msg+format2
 	encrypted=encrypt(msg, pub_key)
 	server.send(encrypted, encoding=False)
 	

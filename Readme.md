@@ -5,6 +5,9 @@
 
 # An awesome end-to-end encrypted chat application using TCP sockets
 
+# Platform
+For linux, windows or mac OS, with python installed
+
 ## Features:
 1. Public key and private key encryption which means even server can't peek into your message
 2. Log in/register system with password
