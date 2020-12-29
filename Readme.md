@@ -1,7 +1,10 @@
 # !!!HUSH!!!
 
 ## Demo
-[![HUSH](previews/cover.png)](https://youtu.be/MF9u-173SDE "Hushchat Demo")
+
+["Full Demo here"](https://youtu.be/MF9u-173SDE)
+
+![HUSH](previews/demo.gif)
 
 # An awesome end-to-end encrypted chat application using TCP sockets
 
