@@ -9,7 +9,7 @@ from os.path import exists as fileexist
 NAME=input("Enter username: ").strip()
 
 if fileexist(NAME+'private_key.pem'):
-    prompt=input("Are you sure you want to proceed, you won't be able to read the unread messages sent to you till before your next login? y or n: ")
+    prompt=input("Are you sure you want to proceed, you won't be able to read the unread messages for the same username with previous authentication? y or n: ")
     if prompt=="n":
     	exit()
 
